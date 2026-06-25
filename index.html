@@ -245,6 +245,7 @@
   <div class="tab" data-tab="cal">📅 Calendrier</div>
   <div class="tab" data-tab="pred">🔮 Mes pronostics</div>
   <div class="tab" data-tab="lead">🏅 Joueurs</div>
+  <div class="tab" data-tab="chat">💬 Chat</div>
   <div class="tab" data-tab="help">❓ Aide</div>
 </div>
 </div>
@@ -253,6 +254,7 @@
 <div id="view-cal" class="view"><div id="calContainer"></div></div>
 <div id="view-pred" class="view"><div id="predContainer"></div></div>
 <div id="view-lead" class="view"><div id="leadContainer"></div></div>
+<div id="view-chat" class="view"><div id="chatContainer"></div></div>
 <div id="view-help" class="view"><div id="helpContainer"></div></div>
 
 <div class="modal-overlay" id="welcomeModal">
@@ -565,8 +567,22 @@ async function renderLeaderboard(){
       html+=`<div class="pred-row"><span class="match">${mk.t1} <strong>${a[0]}–${a[1]}</strong> ${mk.t2}</span>${pills}</div>`;});
     html+='</div>';
   }
-  html+='<div class="chat-card" id="chatSection"></div>';
-  c.innerHTML=html;renderChat();
+  c.innerHTML=html;
+}
+
+// ── Onglet Chat (séparé) ──
+function renderChatTab(){
+  const c=document.getElementById('chatContainer');
+  if(!player){
+    c.innerHTML=`<div class="help-card" style="text-align:center"><h3>💬 Discussion</h3>
+      <p>Choisis un pseudo pour participer au chat (le même que pour le classement des joueurs).</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <input id="pseudoInput" type="text" maxlength="20" placeholder="Ton pseudo" style="padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-family:inherit;font-size:16px" onkeydown="if(event.key==='Enter')joinContest()">
+        <button class="modal-btn" style="margin:0" onclick="joinContest()">⚽ Rejoindre</button></div></div>`;
+    return;
+  }
+  c.innerHTML='<div class="chat-card" id="chatSection"></div>';
+  renderChat();
 }
 
 // ── Chat ──
@@ -652,7 +668,7 @@ function renderHelp(){
     <div class="help-card"><h3>⚽ C'est quoi ?</h3><p>Une appli pour pronostiquer la <strong>Jupiler Pro League 2026/27</strong> entre amis. Rien à installer.</p></div>
     <div class="help-card"><h3>🔮 Faire ses pronostics</h3><p>Clique sur <strong style="color:var(--purple)">🔮 Pronostics</strong> en haut, puis saisis tes scores dans le <strong>Calendrier</strong>, <strong>avant les coups d'envoi</strong> (champs violets).</p><ul><li>✅ Score exact = <strong>3 points</strong></li><li>👍 Bon résultat (1/N/2) = <strong>1 point</strong></li><li>❌ Raté = 0</li></ul><p>Verrouillé 🔒 dès le coup d'envoi du match — pas de triche !</p></div>
     <div class="help-card"><h3>📝 Résultats & classement</h3><p>Les résultats officiels sont encodés par l'organisateur (🔑) et arrivent automatiquement. Le <strong>classement du championnat</strong> et le <strong>classement des pronostiqueurs</strong> se calculent tout seuls.</p></div>
-    <div class="help-card"><h3>🏅 Concours & chat</h3><p>Onglet <strong>Joueurs</strong> : choisis un pseudo pour rejoindre, vois le classement en direct, discute et réagis avec des émojis. Les pronos des autres restent cachés jusqu'au coup d'envoi 🙈</p></div>
+    <div class="help-card"><h3>🏅 Joueurs & 💬 Chat</h3><p>Onglet <strong>Joueurs</strong> : choisis un pseudo pour rejoindre et vois le classement des pronostiqueurs en direct. Onglet <strong>Chat</strong> : discute et réagis avec des émojis. Les pronos des autres restent cachés jusqu'au coup d'envoi 🙈</p></div>
     <div class="help-card"><h3>💾 Sauvegarde</h3><div class="warn">Tes données sont liées à <strong>ce navigateur</strong>. Garde le même pseudo si tu changes d'appareil (tes pronos sont récupérés). Évite de vider les données du navigateur.</div></div>
     <div class="help-card"><h3>📅 Calendrier roulant</h3><p>Les journées apparaissent <strong>au fur et à mesure</strong> qu'elles sont officialisées par la Pro League (~5 semaines avant). Normal de ne pas voir toute la saison d'un coup !</p></div>
     <p style="text-align:center;color:var(--muted);font-size:.85rem;padding:10px 0 30px">Bonne saison ! 🇧🇪⚽</p>`;
@@ -717,6 +733,7 @@ function renderAll(focusedInput){
     case 'cal': renderCalendar(); break;
     case 'pred': renderPredictions(); break;
     case 'lead': renderLeaderboard(); break;
+    case 'chat': renderChatTab(); break;
     case 'help': renderHelp(); break;
   }
   updateStats();
