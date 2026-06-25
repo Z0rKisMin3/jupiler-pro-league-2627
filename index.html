@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JPL 26/27">
+<title>⚽ Jupiler Pro League 2026/27 — Pronostics</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+  :root{
+    --bg:#0a0e1a; --bg2:#0d1120; --bg3:#0f1322;
+    --card1:rgba(20,26,42,.93); --card2:rgba(26,32,53,.93);
+    --line:#2a3044; --line2:#1a1f2e;
+    --txt:#e0e6f0; --muted:#6b7280; --muted2:#9ca3af;
+    --gold:#f59e0b; --orange:#f97316; --red:#ef4444;
+    --green:#10b981; --blue:#3b82f6; --purple:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding:16px;padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right));padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  body{background:radial-gradient(1100px 480px at 50% -90px,#1a2035,var(--bg))}
+  .container{max-width:1200px;margin:0 auto}
+  h1{font-size:2.1rem;font-weight:900;text-align:center;padding:22px 0 4px;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .subtitle{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:8px}
+  .subtitle span{color:var(--gold)}
+  .flag-bar{height:4px;max-width:320px;margin:0 auto 16px;border-radius:99px;background:linear-gradient(90deg,#111 0 33%,#f7d417 33% 66%,#e2231a 66% 100%)}
+
+  .announce{max-width:720px;margin:0 auto 16px;background:linear-gradient(135deg,#f59e0b14,#f9731614);border:1px solid #f59e0b55;border-radius:14px;padding:12px 18px;font-size:.9rem;line-height:1.55}
+  .announce-text{color:#fcd34d}
+  .announce-text.empty{color:var(--muted);font-style:italic}
+  .announce-edit{display:block;margin:8px auto 0;padding:6px 16px;border:1px solid #f59e0b66;border-radius:8px;background:transparent;color:var(--gold);font-weight:600;font-size:.78rem;cursor:pointer;font-family:inherit}
+  .announce textarea,.announce select{width:100%;padding:10px;border:1px solid #f59e0b66;border-radius:8px;background:var(--bg);color:var(--txt);font-family:inherit;font-size:16px;resize:vertical;outline:none}
+  .announce-actions{display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap;align-items:center}
+  .announce-actions button{padding:7px 16px;border:none;border-radius:8px;font-weight:600;font-size:.8rem;cursor:pointer;font-family:inherit}
+  .announce-actions .pub{background:linear-gradient(135deg,var(--gold),var(--orange));color:#0a0e1a}
+  .announce-actions .del{background:#7f1d1d;color:#fecaca}
+  .announce-actions .cancel{background:var(--bg2);color:var(--muted2);border:1px solid var(--line)}
+  .announce-actions select{padding:7px 10px;border:1px solid #f59e0b66;border-radius:8px;background:var(--bg);color:var(--txt);font-family:inherit;font-size:.8rem;width:auto}
+  .announce-ttl{color:var(--muted);font-size:.7rem;margin-top:5px;font-style:italic}
+
+  .progress-wrap{max-width:520px;margin:0 auto 14px;text-align:center}
+  .progress-bar{height:8px;background:var(--line2);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:99px;transition:width .4s}
+  .progress-label{font-size:.75rem;color:var(--muted2);margin-top:5px}
+  .progress-label strong{color:var(--gold)}
+
+  .stats-bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;font-size:.8rem;color:var(--muted2)}
+  .stats-bar span{background:#1a1f2e;padding:5px 14px;border-radius:20px;border:1px solid var(--line)}
+  .stats-bar strong{color:var(--gold)}
+  .stats-bar .pred-chip strong{color:var(--purple)}
+
+  .mode-toggle{display:flex;justify-content:center;margin-bottom:14px}
+  .mode-toggle .inner{display:flex;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+  .mode-toggle button{padding:8px 20px;border:none;border-radius:9px;font-weight:700;font-size:.85rem;cursor:pointer;background:transparent;color:var(--muted);transition:.2s;font-family:inherit}
+  .mode-toggle button.active.res{background:linear-gradient(135deg,#f59e0b,#f97316);color:#0a0e1a}
+  .mode-toggle button.active.prd{background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#0a0e1a}
+  .mode-hint{text-align:center;font-size:.75rem;color:var(--muted);margin:-6px 0 14px}
+  .mode-hint.prd{color:var(--purple)}
+
+  .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+  .controls button{padding:9px 20px;border:none;border-radius:10px;font-weight:600;font-size:.85rem;cursor:pointer;transition:.2s;font-family:inherit}
+  .controls button:hover{transform:translateY(-1px);filter:brightness(1.1)}
+  .btn-reset{background:#7f1d1d;color:#fecaca}
+  .btn-export{background:#1e3a5f;color:#93c5fd}
+  .btn-import{background:#14532d;color:#86efac}
+  .btn-admin{background:#3b2f0a;color:#fcd34d}
+  .btn-admin.on{background:#14532d;color:#86efac}
+
+  .sticky-top{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-bottom:22px}
+  #liveBar{display:none;padding:8px 12px;text-align:center;font-size:.82rem;font-weight:600;background:#ef44440e;border-bottom:1px solid #ef444433;line-height:1.7}
+  .live-tag{color:#f87171;background:#ef444415;border:1px solid #ef444455;padding:1px 8px;border-radius:99px;font-size:.63rem;font-weight:700;animation:livePulse 1.6s ease-in-out infinite;margin-right:8px}
+  @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.45}}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:10px 0}
+  .tab{padding:9px 18px;border-radius:99px;cursor:pointer;font-weight:600;font-size:.85rem;background:var(--bg2);color:var(--muted);transition:.2s;border:1px solid var(--line);user-select:none}
+  .tab:hover{background:#252b3d;color:var(--txt)}
+  .tab.active{background:linear-gradient(135deg,#f59e0b22,#f9731622);color:var(--gold);border-color:#f59e0b66}
+  @media(max-width:768px){.tabs{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 4px}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto}}
+
+  .view{display:none}
+  .view.visible{display:block}
+
+  /* Classement championnat */
+  .standings{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:16px;padding:14px;max-width:760px;margin:0 auto}
+  .standings h3{font-size:1rem;font-weight:800;color:var(--gold);margin-bottom:10px}
+  .stbl{width:100%;border-collapse:collapse;font-size:.8rem}
+  .stbl th{text-align:left;color:var(--muted);font-weight:600;font-size:.66rem;padding:5px 4px;border-bottom:1px solid var(--line)}
+  .stbl td{padding:6px 4px;border-bottom:1px solid var(--line2)}
+  .stbl .num{text-align:center}
+  .stbl .pos{width:24px;text-align:center;font-weight:800}
+  .stbl tr.champ .pos{color:#f59e0b}
+  .stbl tr.euro .pos{color:#10b981}
+  .stbl tr.releg .pos{color:#ef4444}
+  .stbl .zone{width:4px;padding:0;border-radius:2px}
+  .stbl .tname{font-weight:600;white-space:nowrap}
+  .stbl .pts{font-weight:900;color:var(--gold)}
+  .st-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:.7rem;color:var(--muted2)}
+  .st-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:0}
+
+  /* Match rows */
+  .md-block{background:linear-gradient(145deg,var(--card1),var(--card2));border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--line);max-width:760px;margin-left:auto;margin-right:auto}
+  .md-block.md-current{border-color:#ef444466;box-shadow:0 0 0 1px #ef444433}
+  .md-block h3{font-size:.98rem;font-weight:800;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .md-block h3 small{font-weight:500;font-size:.72rem;color:var(--muted)}
+  .md-badge{font-size:.62rem;font-weight:700;color:#f87171;background:#ef444418;border:1px solid #ef444455;padding:1px 8px;border-radius:99px}
+  .gm{display:grid;grid-template-columns:1fr 46px 46px 1fr;gap:6px;align-items:center;padding:6px 10px;background:var(--bg2);border-radius:8px;font-size:.8rem;border-left:3px solid transparent;margin-bottom:6px}
+  .gm.done{border-left-color:var(--green)}
+  .gm.live{border-left-color:var(--gold)}
+  .gm .left{text-align:right}
+  .gm .team{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gm input{width:100%;padding:4px 2px;text-align:center;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--txt);font-size:16px;font-weight:700;outline:none;transition:.15s;font-family:inherit}
+  .gm input:focus{border-color:var(--gold);box-shadow:0 0 0 2px #f59e0b22}
+  .gm input.filled{background:#11231a;border-color:#10b98166}
+  .gm input.pred{border-color:#8b5cf655;background:#150f26}
+  .gm input.pred:focus{border-color:var(--purple);box-shadow:0 0 0 2px #a78bfa22}
+  .gm input.pred.filled{background:#1d1438;border-color:var(--purple)}
+  .gm input:disabled{opacity:.55;cursor:not-allowed}
+  .gm .meta-line{grid-column:1/-1;font-size:.65rem;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:2px}
+  .pred-tag{color:var(--purple);background:#8b5cf615;border:1px solid #8b5cf633;padding:1px 8px;border-radius:99px;font-size:.63rem;font-weight:600}
+  .pts-tag{padding:1px 8px;border-radius:99px;font-size:.63rem;font-weight:700}
+  .pts-3{color:#10b981;background:#10b98118;border:1px solid #10b98144}
+  .pts-1{color:#f59e0b;background:#f59e0b18;border:1px solid #f59e0b44}
+  .pts-0{color:#ef4444;background:#ef444418;border:1px solid #ef444444}
+  @media(max-width:768px){.gm{grid-template-columns:1fr 40px 40px 1fr;font-size:.72rem}}
+
+  /* Pronostics + joueurs (réutilisé) */
+  .pred-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:22px;max-width:760px;margin-left:auto;margin-right:auto}
+  .pred-card{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+  .pred-card .val{font-size:1.8rem;font-weight:900}
+  .pred-card .lbl{font-size:.72rem;color:var(--muted);margin-top:4px}
+  .pred-card.total{border-color:#8b5cf666}.pred-card.total .val{color:var(--purple)}
+  .pred-card.exact .val{color:var(--green)}.pred-card.good .val{color:var(--gold)}
+  .pred-card.bad .val{color:var(--red)}.pred-card.wait .val{color:var(--muted2)}
+  .pred-list{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;max-width:760px;margin-left:auto;margin-right:auto}
+  .pred-list h3{font-size:.95rem;font-weight:800;color:var(--purple);margin-bottom:10px}
+  .pred-row{display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--bg2);border-radius:8px;font-size:.76rem;margin-bottom:5px;flex-wrap:wrap}
+  .pred-row .match{flex:1;min-width:200px}
+  .score-pill{font-weight:700;background:var(--line2);padding:2px 10px;border-radius:99px;font-size:.7rem}
+  .score-pill.p{color:var(--purple)}.score-pill.a{color:var(--txt)}
+  .empty-state{text-align:center;color:var(--muted);padding:40px 20px;font-size:.9rem;max-width:720px;margin:0 auto}
+  .empty-state .big{font-size:2.5rem;margin-bottom:10px}
+
+  .lead-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:760px;margin:0 auto 14px;font-size:.85rem;color:var(--muted2)}
+  .lead-header .who{background:#8b5cf615;border:1px solid #8b5cf633;color:var(--purple);padding:6px 14px;border-radius:99px;font-weight:600}
+  .lead-header button{padding:8px 16px;border:none;border-radius:10px;font-weight:600;font-size:.8rem;cursor:pointer;background:var(--bg2);color:var(--muted2);border:1px solid var(--line);font-family:inherit}
+  .lead-card{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:16px;padding:18px;max-width:760px;margin:0 auto 16px}
+  .lead-card h3{font-size:1rem;font-weight:800;color:var(--gold);margin-bottom:12px}
+  .lead-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);border-radius:10px;font-size:.85rem;margin-bottom:6px;border:1px solid transparent}
+  .lead-row.me{border-color:#8b5cf655;background:#150f26}
+  .lead-row .rank{width:34px;text-align:center;font-weight:800;font-size:1rem}
+  .lead-row .pname{flex:1;font-weight:700}
+  .lead-row .pname small{color:var(--muted);font-weight:400}
+  .lead-row .pts{font-weight:900;color:var(--purple);font-size:1.05rem;min-width:54px;text-align:right}
+  .lead-row .detail{font-size:.68rem;color:var(--muted)}
+
+  .chat-card{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:16px;padding:16px;max-width:760px;margin:0 auto 16px}
+  .chat-card h3{font-size:1rem;font-weight:800;color:var(--purple);margin-bottom:12px}
+  .chat-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;padding:4px 6px 4px 2px;margin-bottom:12px}
+  .chat-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:20px 10px;font-style:italic}
+  .chat-msg{background:var(--bg2);border-radius:10px;padding:8px 11px;font-size:.84rem;line-height:1.45}
+  .chat-msg.mine{background:#150f26;border:1px solid #8b5cf633}
+  .chat-head{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+  .chat-head .who{font-weight:700;color:var(--purple);font-size:.8rem}
+  .chat-msg.mine .chat-head .who{color:#c4b5fd}
+  .chat-head .when{font-size:.66rem;color:var(--muted)}
+  .chat-head .del{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.78rem;padding:0 2px}
+  .chat-body{color:var(--txt);word-wrap:break-word;overflow-wrap:anywhere}
+  .chat-form{display:flex;gap:8px;align-items:flex-end}
+  .chat-input-row{position:relative;flex:1;display:flex}
+  .chat-form textarea{flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--txt);font-family:inherit;font-size:16px;resize:none;outline:none}
+  .chat-form textarea:focus{border-color:var(--purple);box-shadow:0 0 0 2px #a78bfa22}
+  .chat-form button{padding:10px 16px;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;font-family:inherit;background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#0a0e1a}
+  .emoji-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0 6px;align-self:center}
+  .chat-count{font-size:.66rem;color:var(--muted);text-align:right;margin-top:4px}
+  .chat-locked{font-size:.82rem;color:var(--muted);text-align:center;padding:12px;background:var(--bg2);border-radius:10px}
+  .chat-reacts{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;align-items:center}
+  .react-pill{display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--line);border-radius:99px;padding:1px 8px;font-size:.78rem;cursor:pointer}
+  .react-pill.mine{background:#1d1438;border-color:var(--purple)}
+  .react-pill .cnt{font-size:.7rem;font-weight:700;color:var(--muted2)}
+  .react-add{background:none;border:1px dashed var(--line);color:var(--muted);border-radius:99px;width:24px;height:22px;line-height:1;cursor:pointer;font-size:.82rem;padding:0}
+  .emoji-pop{position:fixed;z-index:120;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:0 12px 30px #000000aa;display:flex;flex-wrap:wrap;gap:4px;max-width:236px}
+  .emoji-pop button{background:none;border:none;font-size:1.25rem;cursor:pointer;border-radius:8px;width:34px;height:34px;line-height:1;padding:0}
+
+  .help-card{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:16px;padding:22px;max-width:720px;margin:0 auto 16px}
+  .help-card h3{font-size:1.05rem;font-weight:800;color:var(--gold);margin-bottom:10px}
+  .help-card p{font-size:.85rem;color:var(--muted2);line-height:1.65;margin-bottom:8px}
+  .help-card p strong{color:var(--txt)}
+  .help-card ul{margin:6px 0 10px 22px;font-size:.85rem;color:var(--muted2);line-height:1.7}
+  .help-card .warn{border-left:3px solid var(--gold);background:#f59e0b10;padding:10px 14px;border-radius:8px;font-size:.83rem;color:var(--muted2);line-height:1.6}
+
+  .modal-overlay{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal-overlay.show{display:flex}
+  .modal{background:linear-gradient(145deg,var(--card1),var(--card2));border:1px solid var(--line);border-radius:18px;max-width:560px;max-height:85vh;overflow-y:auto;padding:26px}
+  .modal h2{font-size:1.3rem;font-weight:900;color:var(--gold);margin-bottom:14px;text-align:center}
+  .modal .help-body p{font-size:.85rem;color:var(--muted2);line-height:1.65;margin-bottom:10px}
+  .modal .help-body p strong{color:var(--txt)}
+  .modal .warn{border-left:3px solid var(--gold);background:#f59e0b10;padding:10px 14px;border-radius:8px;font-size:.83rem;color:var(--muted2);line-height:1.6;margin-bottom:14px}
+  .modal .modal-btn{display:block;margin:0 auto;padding:11px 32px;border:none;border-radius:10px;font-weight:800;font-size:.95rem;cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--orange));color:#0a0e1a;font-family:inherit}
+
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a2e1a;color:var(--green);padding:12px 24px;border-radius:10px;font-weight:600;font-size:.9rem;opacity:0;transition:.3s;pointer-events:none;z-index:999;border:1px solid #10b98133}
+  .toast.show{opacity:1}
+  .loading{text-align:center;color:var(--muted);padding:60px 20px}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚽ Jupiler Pro League</h1>
+<p class="subtitle">Saison <span>2026/2027</span> · 18 clubs · 34 journées · Pronostics</p>
+<div class="flag-bar" title="Belgique"></div>
+
+<div id="announceBar" class="announce" style="display:none"></div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label">Matchs joués : <strong id="filledCount">0</strong>/<span id="totalCount">0</span></div>
+</div>
+
+<div class="stats-bar" id="statsBar">
+  <span class="pred-chip">🔮 Pronostics : <strong id="predCountChip">0</strong></span>
+  <span class="pred-chip">⭐ Points : <strong id="predPointsChip">0</strong></span>
+  <span id="cloudChip">☁️ <strong>…</strong></span>
+</div>
+
+<div class="mode-toggle">
+  <div class="inner">
+    <button id="modeRes" class="res active" onclick="setMode('res')">📝 Résultats</button>
+    <button id="modePrd" class="prd" onclick="setMode('prd')">🔮 Pronostics</button>
+  </div>
+</div>
+<p class="mode-hint" id="modeHint">Les résultats officiels sont encodés par l'organisateur et se synchronisent ici.</p>
+
+<div class="controls">
+  <button class="btn-export" onclick="exportJSON()">📥 Exporter</button>
+  <button class="btn-import" onclick="importJSON()">📤 Importer</button>
+  <button class="btn-reset" onclick="resetAll()">🗑️ Tout effacer</button>
+  <button class="btn-admin" id="adminBtn" onclick="adminLogin()">🔑 Organisateur</button>
+  <input type="file" id="importFile" accept=".json" style="display:none">
+</div>
+
+<div class="sticky-top">
+<div id="liveBar"></div>
+<div class="tabs" id="tabs">
+  <div class="tab active" data-tab="standings">🏆 Classement</div>
+  <div class="tab" data-tab="cal">📅 Calendrier</div>
+  <div class="tab" data-tab="pred">🔮 Mes pronostics</div>
+  <div class="tab" data-tab="lead">🏅 Joueurs</div>
+  <div class="tab" data-tab="help">❓ Aide</div>
+</div>
+</div>
+
+<div id="view-standings" class="view visible"><div id="standingsContainer" class="loading">Chargement…</div></div>
+<div id="view-cal" class="view"><div id="calContainer"></div></div>
+<div id="view-pred" class="view"><div id="predContainer"></div></div>
+<div id="view-lead" class="view"><div id="leadContainer"></div></div>
+<div id="view-help" class="view"><div id="helpContainer"></div></div>
+
+<div class="modal-overlay" id="welcomeModal">
+  <div class="modal">
+    <h2>⚽ Bienvenue !</h2>
+    <div class="help-body" id="welcomeBody"></div>
+    <button class="modal-btn" onclick="closeWelcome()">C'est parti !</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const SB_URL='https://okvdbmatahqruipihawo.supabase.co';
+const SB_KEY='sb_publishable_iH1wnf_t9PuY4YonZWsEmQ_hODYiYTE';
+const STORE_KEY='jpl2627_full';
+const PLAYER_KEY='jpl2627_player';
+const ADMIN_KEY='jpl2627_admin';
+const WELCOME_KEY='jpl2627_welcome';
+const PRED='p_';
+
+// Les 18 clubs (pour afficher le classement même avant le 1er match)
+const TEAMS=['Anderlecht','Antwerp','Beveren','Cercle Bruges','Charleroi','Club Bruges','Courtrai','Genk','La Gantoise','Lommel','Malines','OH Louvain','RAAL La Louvière','Saint-Trond','Standard','Union SG','Westerlo','Zulte Waregem'];
+
+let MATCHES=[];        // {match_key, matchday, home, away, kickoff(ms), lock(ms)}
+let kickMap={}, lockMap={};
+let S=loadScores();
+let player=null; try{player=JSON.parse(localStorage.getItem(PLAYER_KEY))||null}catch{}
+let adminCode=localStorage.getItem(ADMIN_KEY)||null;
+let mode='res', currentTab='standings';
+
+function loadScores(){try{return JSON.parse(localStorage.getItem(STORE_KEY))||{}}catch{return{}}}
+function saveScores(){localStorage.setItem(STORE_KEY,JSON.stringify(S))}
+function num(v){if(v===undefined||v===null||v==='')return null;const n=parseInt(v,10);return isNaN(n)?null:n}
+function actual(k){return [num(S[k]),num(S[k+'b'])]}
+function predicted(k){return [num(S[PRED+k]),num(S[PRED+k+'b'])]}
+function hasBoth(p){return p[0]!==null&&p[1]!==null}
+function escHTML(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+async function sb(path,opts={}){
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{...opts,
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json',...(opts.headers||{})}});
+  if(!res.ok)throw new Error((await res.text())||String(res.status));
+  const t=await res.text();return t?JSON.parse(t):null;
+}
+
+// ═══════════════════════════════════════════
+// MATCHS (chargés depuis la base)
+// ═══════════════════════════════════════════
+async function loadMatches(){
+  const rows=await sb('matches?select=match_key,matchday,home,away,kickoff,lock_until&order=kickoff');
+  MATCHES=rows.map(r=>({key:r.match_key,matchday:r.matchday,home:r.home,away:r.away,
+    kickoff:new Date(r.kickoff).getTime(),lock:new Date(r.lock_until).getTime()}));
+  kickMap={};lockMap={};
+  MATCHES.forEach(m=>{kickMap[m.key]=m.kickoff;lockMap[m.key]=m.lock});
+}
+function fmtDay(ms){return new Date(ms).toLocaleDateString('fr-BE',{timeZone:'Europe/Brussels',weekday:'short',day:'numeric',month:'short'})}
+function fmtTime(ms){return new Date(ms).toLocaleTimeString('fr-BE',{timeZone:'Europe/Brussels',hour:'2-digit',minute:'2-digit'})}
+function matchStarted(k){return Date.now()>=(kickMap[k]||Infinity)}
+function matchOver(k){return Date.now()>=(lockMap[k]||Infinity)}
+function allMatchKeys(){return MATCHES.map(m=>({key:m.key,t1:m.home,t2:m.away,matchday:m.matchday,kickoff:m.kickoff}))}
+function matchdays(){return [...new Set(MATCHES.map(m=>m.matchday))].sort((a,b)=>a-b)}
+
+// ═══════════════════════════════════════════
+// CLASSEMENT CHAMPIONNAT
+// ═══════════════════════════════════════════
+function computeStandings(){
+  const t={};TEAMS.forEach(x=>t[x]={mp:0,w:0,d:0,l:0,gf:0,ga:0,pts:0});
+  MATCHES.forEach(m=>{
+    const [s1,s2]=actual(m.key);
+    if(s1===null||s2===null)return;
+    if(!t[m.home]||!t[m.away])return;
+    const A=t[m.home],B=t[m.away];
+    A.mp++;B.mp++;A.gf+=s1;A.ga+=s2;B.gf+=s2;B.ga+=s1;
+    if(s1>s2){A.pts+=3;A.w++;B.l++}else if(s2>s1){B.pts+=3;B.w++;A.l++}else{A.pts++;B.pts++;A.d++;B.d++}
+  });
+  return TEAMS.slice().sort((x,y)=>{
+    const a=t[x],b=t[y];
+    if(b.pts!==a.pts)return b.pts-a.pts;
+    if(b.w!==a.w)return b.w-a.w;                 // règlement belge : victoires
+    if((b.gf-b.ga)!==(a.gf-a.ga))return (b.gf-b.ga)-(a.gf-a.ga);
+    return b.gf-a.gf;
+  }).map((name,i)=>({name,pos:i+1,...t[name]}));
+}
+function renderStandings(){
+  const st=computeStandings();
+  let rows='';
+  st.forEach(r=>{
+    const zoneCls=r.pos===1?'champ':r.pos<=4?'euro':r.pos>=17?'releg':'';
+    const zoneCol=r.pos===1?'#f59e0b':r.pos<=4?'#10b981':r.pos>=17?'#ef4444':'transparent';
+    const gd=r.gf-r.ga;
+    rows+=`<tr class="${zoneCls}"><td class="zone" style="background:${zoneCol}"></td><td class="pos">${r.pos}</td>
+      <td class="tname">${r.name}</td><td class="num">${r.mp}</td><td class="num">${r.w}</td><td class="num">${r.d}</td>
+      <td class="num">${r.l}</td><td class="num">${r.gf}</td><td class="num">${r.ga}</td><td class="num">${gd>0?'+':''}${gd}</td>
+      <td class="num pts">${r.pts}</td></tr>`;
+  });
+  document.getElementById('standingsContainer').innerHTML=`<div class="standings"><h3>🏆 Classement — Jupiler Pro League 2026/27</h3>
+    <table class="stbl"><tr><th></th><th>#</th><th>Équipe</th><th class=num>J</th><th class=num>G</th><th class=num>N</th><th class=num>P</th><th class=num>BP</th><th class=num>BC</th><th class=num>Diff</th><th class=num>Pts</th></tr>${rows}</table>
+    <div class="st-legend"><span><i style="background:#f59e0b"></i>Champion</span><span><i style="background:#10b981"></i>Europe (2-4)</span><span><i style="background:#ef4444"></i>Relégation (17-18)</span></div>
+    <p style="font-size:.7rem;color:var(--muted);margin-top:8px">Départage : points, puis victoires, puis différence de buts (règlement belge).</p></div>`;
+}
+
+// ═══════════════════════════════════════════
+// PRONOSTICS / POINTS
+// ═══════════════════════════════════════════
+function predPoints(p,a){
+  if(!hasBoth(p)||!hasBoth(a))return null;
+  if(p[0]===a[0]&&p[1]===a[1])return 3;
+  const sg=x=>x[0]>x[1]?1:x[0]<x[1]?-1:0;
+  return sg(p)===sg(a)?1:0;
+}
+function predStats(){
+  let total=0,exact=0,good=0,bad=0,pending=0,made=0;
+  allMatchKeys().forEach(mk=>{
+    const p=predicted(mk.key);if(!hasBoth(p))return;made++;
+    const pts=predPoints(p,actual(mk.key));
+    if(pts===null){pending++;return}total+=pts;
+    if(pts===3)exact++;else if(pts===1)good++;else bad++;
+  });
+  return {total,exact,good,bad,pending,made};
+}
+
+// ═══════════════════════════════════════════
+// RENDU LIGNE DE MATCH
+// ═══════════════════════════════════════════
+function matchRowHTML(mk){
+  const a=actual(mk.key), p=predicted(mk.key);
+  const inPred=mode==='prd';
+  const vals=inPred?[S[PRED+mk.key]??'',S[PRED+mk.key+'b']??'']:[S[mk.key]??'',S[mk.key+'b']??''];
+  const fc=i=>vals[i]!==''?' filled':'';
+  const predCls=inPred?' pred':'';
+  const locked=inPred&&(hasBoth(a)||matchStarted(mk.key));
+  const resLock=!inPred&&(!adminCode||!matchOver(mk.key));
+  const dis=(locked||resLock)?' disabled':'';
+  let rowCls='gm';
+  if(hasBoth(a))rowCls+=' done'; else if(matchStarted(mk.key)&&!matchOver(mk.key))rowCls+=' live';
+  let tags='';
+  const pts=predPoints(p,a);
+  if(hasBoth(p)){
+    tags+=`<span class="pred-tag">🔮 ${p[0]}–${p[1]}</span>`;
+    if(pts!==null){const l=pts===3?'✓ Exact +3':pts===1?'~ Bon +1':'✗ Raté';tags+=`<span class="pts-tag pts-${pts}">${l}</span>`}
+  }
+  if(inPred&&hasBoth(a))tags+=`<span class="pts-tag pts-1" style="color:var(--muted2);background:var(--line2);border-color:var(--line)">Résultat ${a[0]}–${a[1]}</span>`;
+  else if(inPred&&matchStarted(mk.key))tags+=`<span class="pred-tag" style="color:var(--muted);border-color:var(--line);background:var(--line2)">🔒 commencé</span>`;
+  if(!inPred&&!hasBoth(a)){
+    if(!matchStarted(mk.key))tags+=`<span class="pred-tag" style="color:var(--muted);border-color:var(--line);background:var(--line2)">⏳ à venir</span>`;
+    else if(!matchOver(mk.key))tags+=`<span class="live-tag">🔴 en cours</span>`;
+    else if(!adminCode)tags+=`<span class="pred-tag" style="color:var(--muted);border-color:var(--line);background:var(--line2)">🔑 à encoder</span>`;
+  }
+  const store=inPred?'pred':'act';
+  return `<div class="${rowCls}">
+    <span class="team left">${mk.t1}</span>
+    <input type="text" inputmode="numeric" maxlength="2" class="sc${predCls}${fc(0)}" data-key="${mk.key}" data-side="a" data-store="${store}" value="${vals[0]}" placeholder="–"${dis}>
+    <input type="text" inputmode="numeric" maxlength="2" class="sc${predCls}${fc(1)}" data-key="${mk.key}" data-side="b" data-store="${store}" value="${vals[1]}" placeholder="–"${dis}>
+    <span class="team">${mk.t2}</span>
+    <div class="meta-line">📅 ${fmtDay(mk.kickoff)} ${fmtTime(mk.kickoff)} ${tags}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+// CALENDRIER (par journée)
+// ═══════════════════════════════════════════
+function currentMatchday(){
+  // 1ère journée non entièrement terminée
+  for(const md of matchdays()){
+    const ms=MATCHES.filter(m=>m.matchday===md);
+    if(ms.some(m=>!hasBoth(actual(m.key))))return md;
+  }
+  return matchdays().slice(-1)[0];
+}
+function renderCalendar(){
+  if(!MATCHES.length){document.getElementById('calContainer').innerHTML='<div class="empty-state"><div class="big">📅</div>Calendrier en cours de chargement…</div>';return}
+  const cur=currentMatchday();
+  const mds=matchdays();
+  const ordered=[...mds.filter(d=>d>=cur),...mds.filter(d=>d<cur)];
+  let html='';
+  ordered.forEach(md=>{
+    const ms=MATCHES.filter(m=>m.matchday===md).sort((a,b)=>a.kickoff-b.kickoff);
+    const played=ms.filter(m=>hasBoth(actual(m.key))).length;
+    const isCur=md===cur;
+    html+=`<div class="md-block${isCur?' md-current':''}"><h3>${isCur?'🔴':'📅'} Journée ${md}${isCur?' <span class="md-badge">à l\'affiche</span>':''} <small>${played}/${ms.length} joués</small></h3>`;
+    html+=ms.map(m=>matchRowHTML({key:m.key,t1:m.home,t2:m.away,kickoff:m.kickoff})).join('');
+    html+='</div>';
+  });
+  document.getElementById('calContainer').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// MES PRONOSTICS
+// ═══════════════════════════════════════════
+function renderPredictions(){
+  const st=predStats();
+  let html=`<div class="pred-summary">
+    <div class="pred-card total"><div class="val">${st.total}</div><div class="lbl">⭐ Points</div></div>
+    <div class="pred-card exact"><div class="val">${st.exact}</div><div class="lbl">✓ Exacts (+3)</div></div>
+    <div class="pred-card good"><div class="val">${st.good}</div><div class="lbl">~ Bons (+1)</div></div>
+    <div class="pred-card bad"><div class="val">${st.bad}</div><div class="lbl">✗ Ratés</div></div>
+    <div class="pred-card wait"><div class="val">${st.pending}</div><div class="lbl">⏳ En attente</div></div>
+  </div>`;
+  const withPred=allMatchKeys().filter(mk=>hasBoth(predicted(mk.key)));
+  if(!withPred.length){
+    html+=`<div class="empty-state"><div class="big">🔮</div>Aucun pronostic.<br>Passe en mode <strong style="color:var(--purple)">Pronostics</strong> et saisis tes scores dans le Calendrier, avant les coups d'envoi !</div>`;
+  }else{
+    const byMd={};withPred.forEach(mk=>{(byMd[mk.matchday]=byMd[mk.matchday]||[]).push(mk)});
+    Object.keys(byMd).sort((a,b)=>a-b).forEach(md=>{
+      html+=`<div class="pred-list"><h3>Journée ${md}</h3>`;
+      byMd[md].forEach(mk=>{
+        const p=predicted(mk.key),a=actual(mk.key),pts=predPoints(p,a);
+        const tag=pts===null?'<span class="pts-tag" style="color:var(--muted);background:var(--line2);border:1px solid var(--line)">⏳</span>':`<span class="pts-tag pts-${pts}">${pts===3?'+3':pts===1?'+1':'0'}</span>`;
+        html+=`<div class="pred-row"><span class="match">${mk.t1} – ${mk.t2}</span><span class="score-pill p">🔮 ${p[0]}–${p[1]}</span>${hasBoth(a)?`<span class="score-pill a">⚽ ${a[0]}–${a[1]}</span>`:''}${tag}</div>`;
+      });
+      html+='</div>';
+    });
+  }
+  document.getElementById('predContainer').innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+// CONCOURS / JOUEURS / CHAT  (réutilisé du Mondial)
+// ═══════════════════════════════════════════
+async function joinContest(){
+  const inp=document.getElementById('pseudoInput');const name=(inp.value||'').trim();
+  if(name.length<2||name.length>20){showToast('⚠️ Pseudo 2-20 caractères');return}
+  try{const rows=await sb('players',{method:'POST',headers:{'Prefer':'return=representation'},body:JSON.stringify({name})});player={id:rows[0].id,name:rows[0].name};}
+  catch(err){const ex=await sb('players?name=eq.'+encodeURIComponent(name)+'&select=id,name').catch(()=>null);
+    if(ex&&ex[0]){if(!confirm(`Le pseudo « ${name} » existe déjà. C'est toi ?`))return;player={id:ex[0].id,name:ex[0].name}}else{showToast('❌ Impossible');return}}
+  localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast(`👋 Bienvenue ${player.name} !`);await syncNow();renderAll();
+}
+function leaveContest(){if(!confirm('Se déconnecter de ce pseudo ?'))return;player=null;localStorage.removeItem(PLAYER_KEY);renderAll();}
+
+const _pending={};
+function queueCloudPush(key,store){clearTimeout(_pending[store+key]);_pending[store+key]=setTimeout(()=>cloudPush(key,store),700)}
+async function cloudPush(key,store){
+  const pair=store==='pred'?predicted(key):actual(key);if(!hasBoth(pair))return;
+  try{
+    if(store==='pred'){if(!player)return;await sb('predictions?on_conflict=player_id,match_key',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify({player_id:player.id,match_key:key,s1:pair[0],s2:pair[1]})})}
+    else{if(!adminCode)return;await sb('rpc/set_result',{method:'POST',body:JSON.stringify({p_key:key,p_s1:pair[0],p_s2:pair[1],p_code:adminCode})})}
+    setCloudStatus(true);
+  }catch(err){const m=String(err);
+    if(m.includes('commencé'))showToast('🔒 Match commencé');
+    else if(m.includes('verrouillé'))showToast('🔒 Match déjà joué');
+    else if(m.includes('pas encore'))showToast('⏳ Match pas terminé');
+    else if(m.includes('invalide'))showToast('🔑 Code invalide');
+    else setCloudStatus(false);
+  }
+}
+async function syncNow(){
+  try{
+    const ann=await sb('announcements?id=eq.main&select=body,expires_at').catch(()=>null);
+    if(ann&&ann[0]){announcement.body=ann[0].body;announcement.expires=ann[0].expires_at}
+    const results=await sb('results?select=match_key,s1,s2');
+    const keys=new Set(results.map(r=>r.match_key));
+    allMatchKeys().forEach(mk=>{if(!keys.has(mk.key)){delete S[mk.key];delete S[mk.key+'b']}});
+    results.forEach(r=>{S[r.match_key]=String(r.s1);S[r.match_key+'b']=String(r.s2)});
+    if(player){
+      const played=new Set(results.map(r=>r.match_key));const rows=[];
+      allMatchKeys().forEach(mk=>{const p=predicted(mk.key);if(hasBoth(p)&&!played.has(mk.key)&&!matchStarted(mk.key))rows.push({player_id:player.id,match_key:mk.key,s1:p[0],s2:p[1]})});
+      if(rows.length)await sb('predictions?on_conflict=player_id,match_key',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(rows)}).catch(()=>{});
+      const mine=await sb('predictions?player_id=eq.'+player.id+'&select=match_key,s1,s2');
+      mine.forEach(p=>{S[PRED+p.match_key]=String(p.s1);S[PRED+p.match_key+'b']=String(p.s2)});
+    }
+    saveScores();setCloudStatus(true);return true;
+  }catch{setCloudStatus(false);return false}
+}
+function setCloudStatus(ok){const el=document.getElementById('cloudChip');if(!el)return;
+  el.innerHTML=ok===null?'☁️ <strong>…</strong>':ok?(player?`☁️ <strong>${player.name}</strong>`:'☁️ <strong>connecté</strong>'):'⚠️ <strong>hors-ligne</strong>'}
+
+async function renderLeaderboard(){
+  const c=document.getElementById('leadContainer');
+  if(!player){
+    c.innerHTML=`<div class="help-card" style="text-align:center"><h3>🏅 Rejoindre le concours</h3>
+      <p>Choisis un pseudo pour comparer tes pronostics avec les autres.</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <input id="pseudoInput" type="text" maxlength="20" placeholder="Ton pseudo" style="padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-family:inherit;font-size:16px" onkeydown="if(event.key==='Enter')joinContest()">
+        <button class="modal-btn" style="margin:0" onclick="joinContest()">⚽ Rejoindre</button></div></div>`;
+    return;
+  }
+  c.innerHTML='<div class="empty-state"><div class="big">⏳</div>Chargement…</div>';
+  let players,preds,results;
+  try{[players,preds,results]=await Promise.all([sb('players?select=id,name'),sb('predictions?select=player_id,match_key,s1,s2'),sb('results?select=match_key,s1,s2')]);}
+  catch{c.innerHTML='<div class="empty-state"><div class="big">⚠️</div>Serveur injoignable.</div>';return}
+  const resMap={};results.forEach(r=>resMap[r.match_key]=[r.s1,r.s2]);
+  const board=players.map(pl=>{
+    const mine=preds.filter(p=>p.player_id===pl.id);let total=0,exact=0,good=0,bad=0,pending=0;
+    mine.forEach(p=>{const a=resMap[p.match_key];if(!a){pending++;return}const pts=predPoints([p.s1,p.s2],a);total+=pts;if(pts===3)exact++;else if(pts===1)good++;else bad++});
+    return {id:pl.id,name:pl.name,total,exact,good,bad,pending,count:mine.length};
+  }).sort((a,b)=>b.total-a.total||b.exact-a.exact||a.name.localeCompare(b.name));
+  let html=`<div class="lead-header"><span class="who">☁️ ${player.name}</span>
+    <button onclick="syncNow().then(()=>renderAll())">🔄 Actualiser</button>
+    <button onclick="leaveContest()">🚪 Changer de pseudo</button></div>`;
+  html+='<div class="lead-card"><h3>🏅 Classement des pronostiqueurs</h3>';
+  if(!board.length)html+='<div class="empty-state" style="padding:20px">Personne n\'a encore rejoint.</div>';
+  board.forEach((b,i)=>{const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    html+=`<div class="lead-row${b.id===player.id?' me':''}"><span class="rank">${medal}</span>
+      <span class="pname">${b.name} <small>· ${b.count} prono${b.count>1?'s':''}</small><br>
+      <span class="detail">✓ ${b.exact} · ~ ${b.good} · ✗ ${b.bad} · ⏳ ${b.pending}</span></span>
+      <span class="pts">${b.total} pts</span></div>`;});
+  html+='</div>';
+  // détail matchs joués
+  const playedKeys=allMatchKeys().filter(mk=>resMap[mk.key]).sort((a,b)=>b.kickoff-a.kickoff);
+  const nameById={};players.forEach(pl=>nameById[pl.id]=pl.name);
+  if(playedKeys.length){
+    html+='<div class="lead-card"><h3>⚽ Pronostics sur les matchs joués</h3>';
+    playedKeys.forEach(mk=>{const a=resMap[mk.key];const mp=preds.filter(p=>p.match_key===mk.key);if(!mp.length)return;
+      let pills='';mp.map(p=>({name:nameById[p.player_id]||'?',s1:p.s1,s2:p.s2,pts:predPoints([p.s1,p.s2],a)})).sort((x,y)=>y.pts-x.pts||x.name.localeCompare(y.name)).forEach(p=>{pills+=`<span class="pts-tag pts-${p.pts}">${escHTML(p.name)} : ${p.s1}–${p.s2} (+${p.pts})</span> `});
+      html+=`<div class="pred-row"><span class="match">${mk.t1} <strong>${a[0]}–${a[1]}</strong> ${mk.t2}</span>${pills}</div>`;});
+    html+='</div>';
+  }
+  html+='<div class="chat-card" id="chatSection"></div>';
+  c.innerHTML=html;renderChat();
+}
+
+// ── Chat ──
+const QUICK_REACTS=['👍','❤️','😂','🔥','⚽','😮','👏','🎉'];
+const COMPOSER_EMOJIS=['😀','😄','😅','😂','😉','😍','😎','🤩','🤔','😬','😱','😭','😡','🥳','😴','👍','👎','👏','🙏','💪','🔥','❤️','💔','✅','❌','⚽','🥅','🏆','🎉','🤞'];
+let chatMyReacts=new Set(), chatDraft='';
+function chatTime(iso){const d=new Date(iso),n=new Date();const hh=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return d.toDateString()===n.toDateString()?`${hh}:${mi}`:`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${hh}:${mi}`}
+async function renderChat(){
+  const sec=document.getElementById('chatSection');if(!sec)return;closeEmojiPopover();
+  let rows=null,reactions=[];
+  try{const [m,re]=await Promise.all([sb('messages?select=id,body,created_at,players!messages_player_id_fkey(name)&order=created_at.desc&limit=60'),sb('reactions?select=message_id,emoji,player_id,players!reactions_player_id_fkey(name)')]);rows=m;reactions=re||[]}catch{}
+  const reMap={};chatMyReacts=new Set();
+  reactions.forEach(r=>{const bm=reMap[r.message_id]||(reMap[r.message_id]={});const e=bm[r.emoji]||(bm[r.emoji]={count:0,mine:false,names:[]});e.count++;e.names.push((r.players&&r.players.name)||'?');if(player&&r.player_id===player.id){e.mine=true;chatMyReacts.add(r.message_id+'|'+r.emoji)}});
+  function reactsHTML(mid){const em=reMap[mid]||{};let h=Object.keys(em).map(emoji=>{const e=em[emoji];return `<span class="react-pill${e.mine?' mine':''}" title="${escHTML(e.names.join(', '))}"${player?` onclick="toggleReaction(${mid},'${emoji}')"`:''}>${emoji}<span class="cnt">${e.count}</span></span>`}).join('');if(player)h+=`<button class="react-add" title="Réagir" onclick="openReactPicker(event,${mid})">＋</button>`;return h?`<div class="chat-reacts">${h}</div>`:''}
+  let listHTML;
+  if(rows===null)listHTML='<div class="chat-empty">⚠️ Discussion indisponible</div>';
+  else if(!rows.length)listHTML='<div class="chat-empty">💬 Aucun message. Lancez la discussion !</div>';
+  else listHTML=rows.slice().reverse().map(m=>{const name=(m.players&&m.players.name)||'?';const mine=player&&name===player.name;const del=adminCode?`<button class="del" onclick="deleteMessage(${m.id})">🗑️</button>`:'';return `<div class="chat-msg${mine?' mine':''}"><div class="chat-head"><span class="who">${escHTML(name)}</span><span class="when">${chatTime(m.created_at)}</span>${del}</div><div class="chat-body">${escHTML(m.body).replace(/\n/g,'<br>')}</div>${reactsHTML(m.id)}</div>`}).join('');
+  const form=player?`<div class="chat-form"><div class="chat-input-row"><textarea id="chatInput" maxlength="200" rows="2" placeholder="Votre message…"></textarea><button class="emoji-btn" type="button" onclick="openEmojiPicker(event)">😊</button></div><button onclick="sendMessage()">Envoyer</button></div><div class="chat-count" id="chatCount">0/200</div>`:'<div class="chat-locked">🔒 Choisissez un pseudo pour discuter.</div>';
+  sec.innerHTML=`<h3>💬 Discussion</h3><div class="chat-list" id="chatList">${listHTML}</div>${form}`;
+  const list=document.getElementById('chatList');if(list)list.scrollTop=list.scrollHeight;
+  const ta=document.getElementById('chatInput');
+  if(ta){ta.value=chatDraft;const cnt=document.getElementById('chatCount');const upd=()=>{chatDraft=ta.value;cnt.textContent=`${ta.value.length}/200`};ta.addEventListener('input',upd);ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});upd()}
+}
+async function sendMessage(){if(!player)return;const ta=document.getElementById('chatInput');const body=(ta?ta.value:'').trim();if(!body)return;try{await sb('messages',{method:'POST',body:JSON.stringify({player_id:player.id,body})});chatDraft='';await renderChat()}catch{showToast('❌ Message non envoyé')}}
+async function deleteMessage(id){if(!adminCode)return;if(!confirm('Supprimer ce message ?'))return;try{await sb('rpc/delete_message',{method:'POST',body:JSON.stringify({msg_id:id,code:adminCode})});await renderChat()}catch{showToast('❌ Suppression impossible')}}
+async function toggleReaction(mid,emoji){if(!player)return;closeEmojiPopover();try{if(chatMyReacts.has(mid+'|'+emoji))await sb(`reactions?message_id=eq.${mid}&player_id=eq.${player.id}&emoji=eq.${encodeURIComponent(emoji)}`,{method:'DELETE'});else await sb('reactions',{method:'POST',body:JSON.stringify({message_id:mid,player_id:player.id,emoji})});await renderChat()}catch{showToast('❌ Réaction impossible')}}
+let _emojiPop=null,_emojiOutside=null;
+function closeEmojiPopover(){if(_emojiPop){_emojiPop.remove();_emojiPop=null}if(_emojiOutside){document.removeEventListener('mousedown',_emojiOutside,true);_emojiOutside=null}}
+function showEmojiPopover(anchor,emojis,onPick,keepOpen){closeEmojiPopover();const pop=document.createElement('div');pop.className='emoji-pop';pop.innerHTML=emojis.map(e=>`<button type="button">${e}</button>`).join('');document.body.appendChild(pop);const r=anchor.getBoundingClientRect();let top=r.top-pop.offsetHeight-8;if(top<8)top=r.bottom+8;let left=Math.min(r.left,window.innerWidth-pop.offsetWidth-8);pop.style.top=Math.max(8,top)+'px';pop.style.left=Math.max(8,left)+'px';pop.querySelectorAll('button').forEach((b,i)=>b.addEventListener('click',ev=>{ev.preventDefault();onPick(emojis[i]);if(!keepOpen)closeEmojiPopover()}));_emojiPop=pop;_emojiOutside=ev=>{if(!pop.contains(ev.target)&&ev.target!==anchor)closeEmojiPopover()};setTimeout(()=>document.addEventListener('mousedown',_emojiOutside,true),0)}
+function openReactPicker(ev,mid){showEmojiPopover(ev.currentTarget,QUICK_REACTS,e=>toggleReaction(mid,e))}
+function openEmojiPicker(ev){showEmojiPopover(ev.currentTarget,COMPOSER_EMOJIS,e=>insertEmoji(e),true)}
+function insertEmoji(emoji){const ta=document.getElementById('chatInput');if(!ta)return;const s=ta.selectionStart,e=ta.selectionEnd;const next=ta.value.slice(0,s)+emoji+ta.value.slice(e);if(next.length>200){showToast('200 max');return}ta.value=next;ta.selectionStart=ta.selectionEnd=s+emoji.length;chatDraft=ta.value;const c=document.getElementById('chatCount');if(c)c.textContent=`${ta.value.length}/200`;ta.focus()}
+
+// ═══════════════════════════════════════════
+// ANNONCES
+// ═══════════════════════════════════════════
+let announcement={body:'',expires:null};
+function announceExpired(){return announcement.expires&&Date.now()>=new Date(announcement.expires).getTime()}
+function remainingLabel(){if(!announcement.expires)return '';const mins=Math.max(1,Math.round((new Date(announcement.expires).getTime()-Date.now())/60000));const txt=mins<60?`${mins} min`:`${Math.floor(mins/60)} h${mins%60?' '+(mins%60)+' min':''}`;return `<div class="announce-ttl">⏳ disparaît dans ${txt}</div>`}
+function renderAnnounce(){
+  const el=document.getElementById('announceBar');if(!el)return;
+  const has=announcement.body&&announcement.body.trim()&&!announceExpired();
+  if(!has&&!adminCode){el.style.display='none';return}el.style.display='';
+  let html=has?`<div class="announce-text">📣 ${escHTML(announcement.body).replace(/\n/g,'<br>')}</div>${remainingLabel()}`:`<div class="announce-text empty">📣 Aucune annonce.</div>`;
+  if(adminCode)html+=`<button class="announce-edit" onclick="editAnnounce()">✏️ ${has?'Modifier':'Rédiger une annonce'}</button>`;
+  el.innerHTML=html;
+}
+function editAnnounce(){
+  const el=document.getElementById('announceBar');
+  el.innerHTML=`<textarea id="announceInput" maxlength="500" rows="3" placeholder="Annonce pour tous les joueurs…"></textarea>
+    <div class="announce-actions"><label style="color:var(--muted2);font-size:.8rem">⏳ Disparaît après :</label>
+      <select id="announceTTL"><option value="">Jamais</option><option value="60">1 heure</option><option value="180">3 heures</option><option value="720">12 heures</option><option value="1440">24 heures</option><option value="4320">3 jours</option></select></div>
+    <div class="announce-actions"><button class="pub" onclick="saveAnnounce()">📣 Publier</button><button class="del" onclick="saveAnnounce(true)">🗑️ Effacer</button><button class="cancel" onclick="renderAnnounce()">Annuler</button></div>`;
+  const ta=document.getElementById('announceInput');ta.value=(!announceExpired()&&announcement.body)||'';ta.focus();
+}
+async function saveAnnounce(clear){
+  if(!adminCode)return;
+  const body=clear?'':(document.getElementById('announceInput')?.value||'').trim();
+  const ttl=clear?'':(document.getElementById('announceTTL')?.value||'');
+  const exp=(body&&ttl)?new Date(Date.now()+parseInt(ttl)*60000).toISOString():null;
+  try{await sb('rpc/set_announcement',{method:'POST',body:JSON.stringify({p_body:body,p_expires:exp,p_code:adminCode})});announcement.body=body;announcement.expires=exp;showToast(body?'📣 Publiée':'🗑️ Effacée')}
+  catch(err){showToast(String(err).includes('invalide')?'🔑 Code invalide':'❌ Impossible')}
+  renderAnnounce();
+}
+
+// ═══════════════════════════════════════════
+// BANDEAU EN COURS
+// ═══════════════════════════════════════════
+function renderLiveBar(){
+  const el=document.getElementById('liveBar');if(!el)return;
+  const live=allMatchKeys().filter(mk=>!hasBoth(actual(mk.key))&&matchStarted(mk.key)&&Date.now()<kickMap[mk.key]+150*60000);
+  if(!live.length){el.style.display='none';return}
+  el.style.display='block';
+  el.innerHTML=`<span class="live-tag">🔴 EN COURS</span>`+live.map(mk=>`<strong>${mk.t1} – ${mk.t2}</strong>`).join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+}
+
+// ═══════════════════════════════════════════
+// AIDE
+// ═══════════════════════════════════════════
+function renderHelp(){
+  document.getElementById('helpContainer').innerHTML=`
+    <div class="help-card"><h3>⚽ C'est quoi ?</h3><p>Une appli pour pronostiquer la <strong>Jupiler Pro League 2026/27</strong> entre amis. Rien à installer.</p></div>
+    <div class="help-card"><h3>🔮 Faire ses pronostics</h3><p>Clique sur <strong style="color:var(--purple)">🔮 Pronostics</strong> en haut, puis saisis tes scores dans le <strong>Calendrier</strong>, <strong>avant les coups d'envoi</strong> (champs violets).</p><ul><li>✅ Score exact = <strong>3 points</strong></li><li>👍 Bon résultat (1/N/2) = <strong>1 point</strong></li><li>❌ Raté = 0</li></ul><p>Verrouillé 🔒 dès le coup d'envoi du match — pas de triche !</p></div>
+    <div class="help-card"><h3>📝 Résultats & classement</h3><p>Les résultats officiels sont encodés par l'organisateur (🔑) et arrivent automatiquement. Le <strong>classement du championnat</strong> et le <strong>classement des pronostiqueurs</strong> se calculent tout seuls.</p></div>
+    <div class="help-card"><h3>🏅 Concours & chat</h3><p>Onglet <strong>Joueurs</strong> : choisis un pseudo pour rejoindre, vois le classement en direct, discute et réagis avec des émojis. Les pronos des autres restent cachés jusqu'au coup d'envoi 🙈</p></div>
+    <div class="help-card"><h3>💾 Sauvegarde</h3><div class="warn">Tes données sont liées à <strong>ce navigateur</strong>. Garde le même pseudo si tu changes d'appareil (tes pronos sont récupérés). Évite de vider les données du navigateur.</div></div>
+    <div class="help-card"><h3>📅 Calendrier roulant</h3><p>Les journées apparaissent <strong>au fur et à mesure</strong> qu'elles sont officialisées par la Pro League (~5 semaines avant). Normal de ne pas voir toute la saison d'un coup !</p></div>
+    <p style="text-align:center;color:var(--muted);font-size:.85rem;padding:10px 0 30px">Bonne saison ! 🇧🇪⚽</p>`;
+}
+const WELCOME_KEY2=WELCOME_KEY;
+function showWelcome(){document.getElementById('welcomeBody').innerHTML=`<p>Pronostique la <strong>Jupiler Pro League 2026/27</strong> entre amis ⚽</p><p><strong style="color:var(--purple)">🔮 Pronostics</strong> — prédis les scores avant les matchs : exact = 3 pts, bon résultat = 1 pt. Verrouillé au coup d'envoi 🔒</p><p>🏆 Classement du championnat + 🏅 classement des pronostiqueurs + 💬 chat.</p><div class="warn">📅 Les journées s'ajoutent au fil de leur officialisation. 💾 Données liées à ce navigateur — détails dans l'onglet <strong>❓ Aide</strong>.</div>`;document.getElementById('welcomeModal').classList.add('show')}
+function closeWelcome(){document.getElementById('welcomeModal').classList.remove('show');localStorage.setItem(WELCOME_KEY2,'1')}
+
+// ═══════════════════════════════════════════
+// STATS / ACTIONS
+// ═══════════════════════════════════════════
+function updateStats(){
+  let filled=0;allMatchKeys().forEach(mk=>{if(hasBoth(actual(mk.key)))filled++});
+  const total=MATCHES.length||1;const ps=predStats();
+  document.getElementById('filledCount').textContent=filled;
+  document.getElementById('totalCount').textContent=MATCHES.length;
+  document.getElementById('progressFill').style.width=(filled/total*100)+'%';
+  document.getElementById('predCountChip').textContent=ps.made;
+  document.getElementById('predPointsChip').textContent=ps.total;
+}
+function resetAll(){if(!confirm('🗑️ Effacer tous tes scores et pronostics locaux ?'))return;S={};localStorage.removeItem(STORE_KEY);renderAll();showToast('🗑️ Effacé')}
+function exportJSON(){const blob=new Blob([JSON.stringify({exported:new Date().toISOString(),scores:S},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`jupiler_2627_${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('📥 Exporté')}
+function importJSON(){const inp=document.getElementById('importFile');inp.onchange=function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);S=d.scores||d;saveScores();renderAll();showToast('📤 Importé')}catch{showToast('❌ Fichier invalide')}this.value=''};r.readAsText(f)};inp.click()}
+function showToast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2500)}
+
+async function adminLogin(){
+  if(adminCode){if(confirm('Quitter le mode organisateur ?')){adminCode=null;localStorage.removeItem(ADMIN_KEY);updateAdminBtn();setMode('prd')}return}
+  const code=prompt('🔑 Code organisateur :');if(!code)return;
+  try{const ok=await sb('rpc/check_admin',{method:'POST',body:JSON.stringify({code})});if(ok===true){adminCode=code;localStorage.setItem(ADMIN_KEY,code);updateAdminBtn();showToast('🔑 Mode organisateur activé');setMode('res')}else showToast('❌ Code incorrect')}catch{showToast('❌ Vérification impossible')}
+}
+function updateAdminBtn(){const b=document.getElementById('adminBtn');if(!b)return;b.textContent=adminCode?'🔑 Organisateur ✓':'🔑 Organisateur';b.classList.toggle('on',!!adminCode)}
+
+// ═══════════════════════════════════════════
+// MODE / ONGLETS / RENDU
+// ═══════════════════════════════════════════
+function setMode(m){
+  mode=m;
+  document.getElementById('modeRes').classList.toggle('active',m==='res');
+  document.getElementById('modePrd').classList.toggle('active',m==='prd');
+  const hint=document.getElementById('modeHint');
+  if(m==='prd'){hint.textContent='🔮 Mode pronostics : saisis tes prédictions avant les matchs (exact = 3 pts, bon résultat = 1 pt). Verrouillé au coup d\'envoi.';hint.classList.add('prd')}
+  else{hint.textContent=adminCode?'🔑 Mode organisateur : saisis les scores réels des matchs terminés.':'Les résultats officiels sont encodés par l\'organisateur et se synchronisent ici.';hint.classList.remove('prd')}
+  renderAll();
+}
+document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');currentTab=this.dataset.tab;document.querySelectorAll('.view').forEach(v=>v.classList.remove('visible'));document.getElementById('view-'+currentTab).classList.add('visible');renderAll()})});
+
+document.addEventListener('input',e=>{
+  if(!e.target.classList.contains('sc'))return;const inp=e.target;inp.value=inp.value.replace(/[^0-9]/g,'');
+  const key=inp.dataset.key,side=inp.dataset.side,store=inp.dataset.store;
+  const fk=(store==='pred'?PRED:'')+key+(side==='b'?'b':'');
+  if(inp.value==='')delete S[fk];else S[fk]=inp.value;
+  saveScores();queueCloudPush(key,store==='pred'?'pred':'act');renderAll(inp);
+});
+
+function renderAll(focusedInput){
+  let focusSig=null;const ae=focusedInput||document.activeElement;
+  if(ae&&ae.classList&&ae.classList.contains('sc'))focusSig={key:ae.dataset.key,side:ae.dataset.side,store:ae.dataset.store};
+  if(!document.getElementById('announceInput'))renderAnnounce();
+  renderLiveBar();
+  switch(currentTab){
+    case 'standings': renderStandings(); break;
+    case 'cal': renderCalendar(); break;
+    case 'pred': renderPredictions(); break;
+    case 'lead': renderLeaderboard(); break;
+    case 'help': renderHelp(); break;
+  }
+  updateStats();
+  if(focusSig){const el=document.querySelector(`.view.visible input.sc[data-key="${focusSig.key}"][data-side="${focusSig.side}"][data-store="${focusSig.store}"]`);if(el&&!el.disabled){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
+}
+
+function isTyping(){const a=document.activeElement;return !!a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA')}
+
+// Init
+(async function init(){
+  updateAdminBtn();
+  setMode('res');
+  if(!localStorage.getItem(WELCOME_KEY))showWelcome();
+  try{await loadMatches()}catch{document.getElementById('standingsContainer').innerHTML='<div class="empty-state"><div class="big">⚠️</div>Impossible de charger les matchs.</div>'}
+  await syncNow();
+  renderAll();
+  setInterval(()=>{if(document.visibilityState==='visible'&&!isTyping())syncNow().then(()=>{if(!isTyping())renderAll()})},5*60*1000);
+  setInterval(()=>{if(document.visibilityState==='visible'&&!isTyping())renderAll()},60*1000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!isTyping())syncNow().then(()=>renderAll())});
+})();
+</script>
+</body>
+</html>
