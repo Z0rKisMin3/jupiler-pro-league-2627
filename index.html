@@ -834,6 +834,13 @@ function renderPendingBar(){
       ⏳ <strong>Compte en attente de validation.</strong> Tu peux suivre le classement et le calendrier, mais tu ne pourras <strong>pronostiquer et discuter</strong> qu'une fois validé par l'organisateur.<br>${waButtonHTML(player.name)}</div>`;
   }else{el.style.display='none';el.innerHTML=''}
 }
+async function refreshApproval(){
+  if(!(player&&player.token&&player.approved===false))return;
+  try{const me=await sb('rpc/whoami',{method:'POST',body:JSON.stringify({p_token:player.token})});
+    if(me&&me.approved){player.approved=true;localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast('✅ Ton compte a été validé — tu peux jouer !');renderAll()}
+    else if(!me){player=null;localStorage.removeItem(PLAYER_KEY);showToast('Ton inscription n\'a pas été validée.');renderAll()}
+  }catch{}
+}
 async function refreshPendingBadge(){
   const b=document.getElementById('pendingBadge');if(!b)return;
   if(!adminCode){b.style.display='none';b.textContent='';return}
@@ -875,8 +882,8 @@ function isTyping(){const a=document.activeElement;return !!a&&(a.tagName==='INP
   await syncNow();
   renderAll();
   setInterval(()=>{if(document.visibilityState==='visible'&&!isTyping())syncNow().then(()=>{if(!isTyping())renderAll()})},5*60*1000);
-  setInterval(()=>{if(document.visibilityState==='visible'&&!isTyping())renderAll()},60*1000);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!isTyping())syncNow().then(()=>renderAll())});
+  setInterval(()=>{if(document.visibilityState==='visible'&&!isTyping()){refreshApproval();renderAll()}},60*1000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!isTyping()){refreshApproval();syncNow().then(()=>renderAll())}});
 })();
 </script>
 </body>
