@@ -245,7 +245,7 @@
   <div class="tab active" data-tab="standings">🏆 Classement</div>
   <div class="tab" data-tab="cal">📅 Calendrier</div>
   <div class="tab" data-tab="pred">🔮 Mes pronostics</div>
-  <div class="tab" data-tab="lead">🏅 Joueurs</div>
+  <div class="tab" data-tab="lead">🏅 Joueurs<span id="pendingBadge" style="display:none"></span></div>
   <div class="tab" data-tab="chat">💬 Chat</div>
   <div class="tab" data-tab="help">❓ Aide</div>
 </div>
@@ -669,9 +669,9 @@ async function adminRegsHTML(){
   }
   h+='</div>';return h;
 }
-async function adminApprove(id,name){try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:true,p_code:adminCode})});showToast(`✅ ${name} validé`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
-async function adminRevoke(id,name){if(!confirm(`Suspendre ${name} ? Il ne pourra plus jouer jusqu'à revalidation.`))return;try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:false,p_code:adminCode})});showToast(`⏸️ ${name} suspendu`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
-async function adminReject(id,name){if(!confirm(`Refuser et SUPPRIMER l'inscription de ${name} ? (irréversible)`))return;try{await sb('rpc/admin_delete_player',{method:'POST',body:JSON.stringify({p_id:id,p_code:adminCode})});showToast(`🗑️ ${name} supprimé`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function adminApprove(id,name){try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:true,p_code:adminCode})});showToast(`✅ ${name} validé`);renderLeaderboard();refreshPendingBadge()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function adminRevoke(id,name){if(!confirm(`Suspendre ${name} ? Il ne pourra plus jouer jusqu'à revalidation.`))return;try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:false,p_code:adminCode})});showToast(`⏸️ ${name} suspendu`);renderLeaderboard();refreshPendingBadge()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function adminReject(id,name){if(!confirm(`Refuser et SUPPRIMER l'inscription de ${name} ? (irréversible)`))return;try{await sb('rpc/admin_delete_player',{method:'POST',body:JSON.stringify({p_id:id,p_code:adminCode})});showToast(`🗑️ ${name} supprimé`);renderLeaderboard();refreshPendingBadge()}catch(e){showToast('❌ '+cleanErr(e))}}
 
 // ── Onglet Chat (séparé) ──
 function renderChatTab(){
@@ -830,12 +830,21 @@ function renderPendingBar(){
       ⏳ <strong>Compte en attente de validation.</strong> Tu peux suivre le classement et le calendrier, mais tu ne pourras <strong>pronostiquer et discuter</strong> qu'une fois validé par l'organisateur.<br>${waButtonHTML(player.name)}</div>`;
   }else{el.style.display='none';el.innerHTML=''}
 }
+async function refreshPendingBadge(){
+  const b=document.getElementById('pendingBadge');if(!b)return;
+  if(!adminCode){b.style.display='none';b.textContent='';return}
+  let n=0;try{const regs=await sb('rpc/admin_list_registrations',{method:'POST',body:JSON.stringify({p_code:adminCode})});n=(regs||[]).filter(r=>!r.approved).length}catch{return}
+  if(n>0){b.textContent=n;b.title=n+' inscription(s) en attente';
+    b.style.cssText='display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:#ef4444;color:#fff;font-size:.7rem;font-weight:800;vertical-align:middle';
+  }else{b.style.display='none';b.textContent=''}
+}
 function renderAll(focusedInput){
   let focusSig=null;const ae=focusedInput||document.activeElement;
   if(ae&&ae.classList&&ae.classList.contains('sc'))focusSig={key:ae.dataset.key,side:ae.dataset.side,store:ae.dataset.store};
   if(!document.getElementById('announceInput'))renderAnnounce();
   renderLiveBar();
   renderPendingBar();
+  refreshPendingBadge();
   switch(currentTab){
     case 'standings': renderStandings(); break;
     case 'cal': renderCalendar(); break;
