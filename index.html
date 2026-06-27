@@ -689,11 +689,13 @@ function renderChatTab(){
 const QUICK_REACTS=['👍','❤️','😂','🔥','⚽','😮','👏','🎉'];
 const COMPOSER_EMOJIS=['😀','😄','😅','😂','😉','😍','😎','🤩','🤔','😬','😱','😭','😡','🥳','😴','👍','👎','👏','🙏','💪','🔥','❤️','💔','✅','❌','⚽','🥅','🏆','🎉','🤞'];
 let chatMyReacts=new Set(), chatDraft='';
+let chatEditId=null, chatEditDraft='', chatBodies={};
 function chatTime(iso){const d=new Date(iso),n=new Date();const hh=String(d.getHours()).padStart(2,'0'),mi=String(d.getMinutes()).padStart(2,'0');return d.toDateString()===n.toDateString()?`${hh}:${mi}`:`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${hh}:${mi}`}
 async function renderChat(){
   const sec=document.getElementById('chatSection');if(!sec)return;closeEmojiPopover();
   let rows=null,reactions=[];
-  try{const [m,re]=await Promise.all([sb('messages?select=id,body,created_at,players!messages_player_id_fkey(name)&order=created_at.desc&limit=60'),sb('reactions?select=message_id,emoji,player_id,players!reactions_player_id_fkey(name)')]);rows=m;reactions=re||[]}catch{}
+  try{const [m,re]=await Promise.all([sb('messages?select=id,body,created_at,edited_at,player_id,players!messages_player_id_fkey(name)&order=created_at.desc&limit=60'),sb('reactions?select=message_id,emoji,player_id,players!reactions_player_id_fkey(name)')]);rows=m;reactions=re||[]}catch{}
+  chatBodies={};
   const reMap={};chatMyReacts=new Set();
   reactions.forEach(r=>{const bm=reMap[r.message_id]||(reMap[r.message_id]={});const e=bm[r.emoji]||(bm[r.emoji]={count:0,mine:false,names:[]});e.count++;e.names.push((r.players&&r.players.name)||'?');if(player&&r.player_id===player.id){e.mine=true;chatMyReacts.add(r.message_id+'|'+r.emoji)}});
   const canReact=player&&!isPending();
@@ -701,13 +703,34 @@ async function renderChat(){
   let listHTML;
   if(rows===null)listHTML='<div class="chat-empty">⚠️ Discussion indisponible</div>';
   else if(!rows.length)listHTML='<div class="chat-empty">💬 Aucun message. Lancez la discussion !</div>';
-  else listHTML=rows.slice().reverse().map(m=>{const name=(m.players&&m.players.name)||'?';const mine=player&&name===player.name;const del=adminCode?`<button class="del" onclick="deleteMessage(${m.id})">🗑️</button>`:'';return `<div class="chat-msg${mine?' mine':''}"><div class="chat-head"><span class="who">${escHTML(name)}</span><span class="when">${chatTime(m.created_at)}</span>${del}</div><div class="chat-body">${escHTML(m.body).replace(/\n/g,'<br>')}</div>${reactsHTML(m.id)}</div>`}).join('');
+  else listHTML=rows.slice().reverse().map(m=>{
+    const name=(m.players&&m.players.name)||'?';
+    const own=!!(player&&m.player_id===player.id);
+    chatBodies[m.id]=m.body;
+    let ctrls='';
+    if(own&&!isPending())ctrls=`<button class="del" title="Modifier" onclick="startEditMsg(${m.id})">✏️</button><button class="del" title="Supprimer" onclick="deleteOwnMessage(${m.id})">🗑️</button>`;
+    else if(adminCode)ctrls=`<button class="del" title="Supprimer (organisateur)" onclick="deleteMessage(${m.id})">🗑️</button>`;
+    const edited=m.edited_at?` <span class="when" style="opacity:.7">· modifié</span>`:'';
+    let bodyHTML;
+    if(m.id===chatEditId){
+      bodyHTML=`<textarea id="editInput_${m.id}" maxlength="200" rows="2" style="width:100%;box-sizing:border-box;background:var(--bg);color:var(--txt);border:1px solid var(--purple);border-radius:8px;padding:8px;font-family:inherit;font-size:15px;resize:vertical">${escHTML(chatEditDraft)}</textarea>
+        <div style="display:flex;gap:6px;margin-top:6px"><button onclick="saveEditMsg(${m.id})" style="background:var(--purple);color:#fff;border:none;padding:6px 12px;border-radius:8px;font-weight:700;cursor:pointer">💾 Enregistrer</button><button class="del" onclick="cancelEditMsg()">Annuler</button></div>`;
+    }else{
+      bodyHTML=`<div class="chat-body">${escHTML(m.body).replace(/\n/g,'<br>')}</div>${reactsHTML(m.id)}`;
+    }
+    return `<div class="chat-msg${own?' mine':''}"><div class="chat-head"><span class="who">${escHTML(name)}</span><span class="when">${chatTime(m.created_at)}</span>${edited}${ctrls}</div>${bodyHTML}</div>`;
+  }).join('');
   const form=(player&&!isPending())?`<div class="chat-form"><div class="chat-input-row"><textarea id="chatInput" maxlength="200" rows="2" placeholder="Votre message…"></textarea><button class="emoji-btn" type="button" onclick="openEmojiPicker(event)">😊</button></div><button onclick="sendMessage()">Envoyer</button></div><div class="chat-count" id="chatCount">0/200</div>`:(isPending()?'<div class="chat-locked">⏳ En attente de validation par l\'organisateur pour pouvoir discuter.</div>':'<div class="chat-locked">🔒 Connecte-toi pour discuter.</div>');
   sec.innerHTML=`<h3>💬 Discussion</h3><div class="chat-list" id="chatList">${listHTML}</div>${form}`;
   const list=document.getElementById('chatList');if(list)list.scrollTop=list.scrollHeight;
   const ta=document.getElementById('chatInput');
   if(ta){ta.value=chatDraft;const cnt=document.getElementById('chatCount');const upd=()=>{chatDraft=ta.value;cnt.textContent=`${ta.value.length}/200`};ta.addEventListener('input',upd);ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}});upd()}
+  if(chatEditId){const eta=document.getElementById('editInput_'+chatEditId);if(eta){eta.addEventListener('input',()=>{chatEditDraft=eta.value});eta.focus();eta.setSelectionRange(eta.value.length,eta.value.length)}}
 }
+function startEditMsg(id){chatEditId=id;chatEditDraft=chatBodies[id]||'';renderChat()}
+function cancelEditMsg(){chatEditId=null;chatEditDraft='';renderChat()}
+async function saveEditMsg(id){const ta=document.getElementById('editInput_'+id);const body=(ta?ta.value:'').trim();if(!body){showToast('⚠️ Le message ne peut pas être vide');return}try{await sb('rpc/edit_message',{method:'POST',body:JSON.stringify({p_token:player.token,p_msg:id,p_body:body})});chatEditId=null;chatEditDraft='';await renderChat()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function deleteOwnMessage(id){if(!confirm('Supprimer ton message ?'))return;try{await sb('rpc/delete_own_message',{method:'POST',body:JSON.stringify({p_token:player.token,p_msg:id})});if(chatEditId===id)chatEditId=null;await renderChat()}catch(e){showToast('❌ '+cleanErr(e))}}
 async function sendMessage(){if(!player)return;const ta=document.getElementById('chatInput');const body=(ta?ta.value:'').trim();if(!body)return;try{await sb('rpc/post_message',{method:'POST',body:JSON.stringify({p_token:player.token,p_body:body})});chatDraft='';await renderChat()}catch{showToast('❌ Message non envoyé')}}
 async function deleteMessage(id){if(!adminCode)return;if(!confirm('Supprimer ce message ?'))return;try{await sb('rpc/delete_message',{method:'POST',body:JSON.stringify({msg_id:id,code:adminCode})});await renderChat()}catch{showToast('❌ Suppression impossible')}}
 async function toggleReaction(mid,emoji){if(!player)return;closeEmojiPopover();try{await sb('rpc/toggle_reaction',{method:'POST',body:JSON.stringify({p_token:player.token,p_msg:mid,p_emoji:emoji})});await renderChat()}catch{showToast('❌ Réaction impossible')}}
