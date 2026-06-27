@@ -210,6 +210,7 @@
 <div class="flag-bar" title="Belgique"></div>
 
 <div id="announceBar" class="announce" style="display:none"></div>
+<div id="pendingBar" style="display:none"></div>
 
 <div class="progress-wrap">
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -406,7 +407,8 @@ function matchRowHTML(mk){
   const predCls=inPred?' pred':'';
   const locked=inPred&&(hasBoth(a)||matchStarted(mk.key));
   const resLock=!inPred&&(!adminCode||!matchOver(mk.key));
-  const dis=(locked||resLock)?' disabled':'';
+  const pendingLock=inPred&&isPending();
+  const dis=(locked||resLock||pendingLock)?' disabled':'';
   let rowCls='gm';
   if(hasBoth(a))rowCls+=' done'; else if(matchStarted(mk.key)&&!matchOver(mk.key))rowCls+=' live';
   let tags='';
@@ -504,7 +506,16 @@ const LEGAL_CHECKS=[
   ['chkJeu',`Je comprends qu'il s'agit d'un <a href="legal/jeu-gratuit.html" ${LK}>jeu gratuit</a>, sans mise, sans pari, sans gain financier ni récompense de valeur économique.`],
   ['chkUniq',`Je confirme que je n'utiliserai qu'<strong>un seul compte</strong>.`],
   ['chkExact',`Je confirme que mes informations d'inscription sont exactes.`],
+  ['chkValid',`Je comprends que mon inscription doit être <strong>validée par l'organisateur</strong> avant de pouvoir participer.`],
 ];
+const WA_NUMBER='32473453924';
+function waLink(pseudo){
+  const msg=`Bonjour Etienne 👋\nJe viens de m'inscrire sur PronoStick Foot Belge.\nPseudo : ${pseudo||'(mon pseudo)'}\nMoi c'est : (écris ici ton nom et ton prénom)\nPeux-tu valider mon compte ? Merci !`;
+  return 'https://wa.me/'+WA_NUMBER+'?text='+encodeURIComponent(msg);
+}
+function waButtonHTML(pseudo){
+  return `<a href="${waLink(pseudo)}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;background:#25D366;color:#06351b;font-weight:800;padding:11px 18px;border-radius:12px;margin:8px auto 0">📲 Prévenir l'organisateur sur WhatsApp</a>`;
+}
 function val(id){const e=document.getElementById(id);return e?e.value.trim():''}
 function cleanErr(err){try{return JSON.parse(err.message).message||err.message}catch{return String(err.message||err)}}
 function authCardHTML(){
@@ -512,6 +523,7 @@ function authCardHTML(){
   if(authMode==='register'){
     return `<div class="help-card" style="max-width:420px;text-align:center"><h3>🆕 Créer mon compte</h3>
       <p style="font-size:.82rem">Un pseudo + un mot de passe perso pour <strong>protéger ton pseudo</strong> (personne d'autre ne pourra l'utiliser).</p>
+      <p style="font-size:.78rem;color:var(--orange);background:#3a2a08;border:1px solid #f59e0b44;border-radius:8px;padding:8px 10px;margin-top:8px">⏳ Ton inscription est <strong>soumise à la validation de l'organisateur</strong>. Après l'avoir créée, préviens-le sur WhatsApp pour qu'il t'active.</p>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
         <input id="auName" maxlength="20" placeholder="Pseudo" style="${inp}">
         <input id="auPass" type="password" placeholder="Mot de passe (4 caractères min.)" style="${inp}">
@@ -540,14 +552,14 @@ async function doRegister(){
   const allChecked=LEGAL_CHECKS.every(([id])=>document.getElementById(id)?.checked);
   if(!allChecked){showToast('⚠️ Tu dois accepter les documents obligatoires pour créer un compte');return}
   try{const r=await sb('rpc/register_player',{method:'POST',body:JSON.stringify({p_name:name,p_email:email,p_password:pass,p_legal_version:LEGAL_VERSION})});
-    player={id:r.id,name:r.name,token:r.token};localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast(`👋 Bienvenue ${player.name} !`);await syncNow();renderAll();}
+    player={id:r.id,name:r.name,token:r.token,approved:false};localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast('✅ Compte créé — en attente de validation');await syncNow();renderAll();}
   catch(err){showToast('❌ '+cleanErr(err))}
 }
 async function doLogin(){
   const name=val('auName'),pass=val('auPass');
   if(!name||!pass){showToast('⚠️ Pseudo et mot de passe requis');return}
   try{const r=await sb('rpc/login_player',{method:'POST',body:JSON.stringify({p_name:name,p_password:pass})});
-    player={id:r.id,name:r.name,token:r.token};localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast(`👋 Salut ${player.name} !`);await syncNow();renderAll();}
+    player={id:r.id,name:r.name,token:r.token,approved:r.approved!==false};localStorage.setItem(PLAYER_KEY,JSON.stringify(player));showToast(`👋 Salut ${player.name} !`);await syncNow();renderAll();}
   catch(err){showToast('❌ '+cleanErr(err))}
 }
 function leaveContest(){if(!confirm('Se déconnecter ?'))return;player=null;localStorage.removeItem(PLAYER_KEY);authMode='login';renderAll();}
@@ -613,6 +625,7 @@ async function renderLeaderboard(){
     <button onclick="syncNow().then(()=>renderAll())">🔄 Actualiser</button>
     ${adminCode?`<button onclick="adminResetPwd()">🔧 Réinit. mot de passe</button>`:''}
     <button onclick="leaveContest()">🚪 Déconnexion</button></div>`;
+  if(adminCode){try{html+=await adminRegsHTML()}catch{}}
   html+='<div class="lead-card"><h3>🏅 Classement des pronostiqueurs</h3>';
   if(!board.length)html+='<div class="empty-state" style="padding:20px">Personne n\'a encore rejoint.</div>';
   board.forEach((b,i)=>{const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
@@ -634,6 +647,32 @@ async function renderLeaderboard(){
   c.innerHTML=html;
 }
 
+// ── Validation des inscriptions (organisateur) ──
+async function adminRegsHTML(){
+  let regs=[];try{regs=await sb('rpc/admin_list_registrations',{method:'POST',body:JSON.stringify({p_code:adminCode})})}catch{return''}
+  const pend=regs.filter(r=>!r.approved), appr=regs.filter(r=>r.approved);
+  const dt=s=>{try{return new Date(s).toLocaleDateString('fr-BE',{day:'2-digit',month:'2-digit',year:'2-digit'})}catch{return''}};
+  let h='<div class="lead-card"><h3>🛂 Inscriptions — validation</h3>';
+  if(!regs.length)h+='<div class="empty-state" style="padding:16px">Aucune inscription pour le moment.</div>';
+  if(pend.length){
+    h+=`<p style="margin:6px 0;color:var(--orange);font-weight:700;font-size:.85rem">⏳ En attente (${pend.length})</p>`;
+    pend.forEach(r=>{h+=`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">
+      <span style="flex:1;min-width:140px"><strong>${escHTML(r.name)}</strong><br><small style="color:var(--muted)">${escHTML(r.email||'—')} · ${dt(r.created_at)}</small></span>
+      <button onclick="adminApprove('${r.id}','${escHTML(r.name)}')" style="background:#10b981;color:#04231a;border:none;padding:7px 12px;border-radius:8px;font-weight:700;cursor:pointer">✅ Valider</button>
+      <button onclick="adminReject('${r.id}','${escHTML(r.name)}')" style="background:#7f1d1d;color:#fecaca;border:none;padding:7px 12px;border-radius:8px;font-weight:700;cursor:pointer">🗑️ Refuser</button></div>`});
+  }
+  if(appr.length){
+    h+=`<p style="margin:12px 0 6px;color:var(--muted);font-weight:700;font-size:.85rem">✅ Validés (${appr.length})</p>`;
+    appr.forEach(r=>{h+=`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:.88rem">
+      <span style="flex:1;min-width:140px">${escHTML(r.name)} <small style="color:var(--muted)">· ${escHTML(r.email||'—')}</small></span>
+      <button onclick="adminRevoke('${r.id}','${escHTML(r.name)}')" style="background:var(--line2);color:var(--muted2);border:1px solid var(--line);padding:6px 10px;border-radius:8px;cursor:pointer">⏸️ Suspendre</button></div>`});
+  }
+  h+='</div>';return h;
+}
+async function adminApprove(id,name){try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:true,p_code:adminCode})});showToast(`✅ ${name} validé`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function adminRevoke(id,name){if(!confirm(`Suspendre ${name} ? Il ne pourra plus jouer jusqu'à revalidation.`))return;try{await sb('rpc/admin_set_approval',{method:'POST',body:JSON.stringify({p_id:id,p_approved:false,p_code:adminCode})});showToast(`⏸️ ${name} suspendu`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
+async function adminReject(id,name){if(!confirm(`Refuser et SUPPRIMER l'inscription de ${name} ? (irréversible)`))return;try{await sb('rpc/admin_delete_player',{method:'POST',body:JSON.stringify({p_id:id,p_code:adminCode})});showToast(`🗑️ ${name} supprimé`);renderLeaderboard()}catch(e){showToast('❌ '+cleanErr(e))}}
+
 // ── Onglet Chat (séparé) ──
 function renderChatTab(){
   const c=document.getElementById('chatContainer');
@@ -653,12 +692,13 @@ async function renderChat(){
   try{const [m,re]=await Promise.all([sb('messages?select=id,body,created_at,players!messages_player_id_fkey(name)&order=created_at.desc&limit=60'),sb('reactions?select=message_id,emoji,player_id,players!reactions_player_id_fkey(name)')]);rows=m;reactions=re||[]}catch{}
   const reMap={};chatMyReacts=new Set();
   reactions.forEach(r=>{const bm=reMap[r.message_id]||(reMap[r.message_id]={});const e=bm[r.emoji]||(bm[r.emoji]={count:0,mine:false,names:[]});e.count++;e.names.push((r.players&&r.players.name)||'?');if(player&&r.player_id===player.id){e.mine=true;chatMyReacts.add(r.message_id+'|'+r.emoji)}});
-  function reactsHTML(mid){const em=reMap[mid]||{};let h=Object.keys(em).map(emoji=>{const e=em[emoji];return `<span class="react-pill${e.mine?' mine':''}" title="${escHTML(e.names.join(', '))}"${player?` onclick="toggleReaction(${mid},'${emoji}')"`:''}>${emoji}<span class="cnt">${e.count}</span></span>`}).join('');if(player)h+=`<button class="react-add" title="Réagir" onclick="openReactPicker(event,${mid})">＋</button>`;return h?`<div class="chat-reacts">${h}</div>`:''}
+  const canReact=player&&!isPending();
+  function reactsHTML(mid){const em=reMap[mid]||{};let h=Object.keys(em).map(emoji=>{const e=em[emoji];return `<span class="react-pill${e.mine?' mine':''}" title="${escHTML(e.names.join(', '))}"${canReact?` onclick="toggleReaction(${mid},'${emoji}')"`:''}>${emoji}<span class="cnt">${e.count}</span></span>`}).join('');if(canReact)h+=`<button class="react-add" title="Réagir" onclick="openReactPicker(event,${mid})">＋</button>`;return h?`<div class="chat-reacts">${h}</div>`:''}
   let listHTML;
   if(rows===null)listHTML='<div class="chat-empty">⚠️ Discussion indisponible</div>';
   else if(!rows.length)listHTML='<div class="chat-empty">💬 Aucun message. Lancez la discussion !</div>';
   else listHTML=rows.slice().reverse().map(m=>{const name=(m.players&&m.players.name)||'?';const mine=player&&name===player.name;const del=adminCode?`<button class="del" onclick="deleteMessage(${m.id})">🗑️</button>`:'';return `<div class="chat-msg${mine?' mine':''}"><div class="chat-head"><span class="who">${escHTML(name)}</span><span class="when">${chatTime(m.created_at)}</span>${del}</div><div class="chat-body">${escHTML(m.body).replace(/\n/g,'<br>')}</div>${reactsHTML(m.id)}</div>`}).join('');
-  const form=player?`<div class="chat-form"><div class="chat-input-row"><textarea id="chatInput" maxlength="200" rows="2" placeholder="Votre message…"></textarea><button class="emoji-btn" type="button" onclick="openEmojiPicker(event)">😊</button></div><button onclick="sendMessage()">Envoyer</button></div><div class="chat-count" id="chatCount">0/200</div>`:'<div class="chat-locked">🔒 Choisissez un pseudo pour discuter.</div>';
+  const form=(player&&!isPending())?`<div class="chat-form"><div class="chat-input-row"><textarea id="chatInput" maxlength="200" rows="2" placeholder="Votre message…"></textarea><button class="emoji-btn" type="button" onclick="openEmojiPicker(event)">😊</button></div><button onclick="sendMessage()">Envoyer</button></div><div class="chat-count" id="chatCount">0/200</div>`:(isPending()?'<div class="chat-locked">⏳ En attente de validation par l\'organisateur pour pouvoir discuter.</div>':'<div class="chat-locked">🔒 Connecte-toi pour discuter.</div>');
   sec.innerHTML=`<h3>💬 Discussion</h3><div class="chat-list" id="chatList">${listHTML}</div>${form}`;
   const list=document.getElementById('chatList');if(list)list.scrollTop=list.scrollHeight;
   const ta=document.getElementById('chatInput');
@@ -781,11 +821,21 @@ document.addEventListener('input',e=>{
   saveScores();queueCloudPush(key,store==='pred'?'pred':'act');renderAll(inp);
 });
 
+function isPending(){return !!(player&&player.approved===false)}
+function renderPendingBar(){
+  const el=document.getElementById('pendingBar');if(!el)return;
+  if(isPending()){
+    el.style.display='block';
+    el.innerHTML=`<div style="background:#3a2a08;border:1px solid #f59e0b66;border-radius:12px;padding:14px 16px;margin:10px 0;text-align:center;font-size:.9rem;line-height:1.5">
+      ⏳ <strong>Compte en attente de validation.</strong> Tu peux suivre le classement et le calendrier, mais tu ne pourras <strong>pronostiquer et discuter</strong> qu'une fois validé par l'organisateur.<br>${waButtonHTML(player.name)}</div>`;
+  }else{el.style.display='none';el.innerHTML=''}
+}
 function renderAll(focusedInput){
   let focusSig=null;const ae=focusedInput||document.activeElement;
   if(ae&&ae.classList&&ae.classList.contains('sc'))focusSig={key:ae.dataset.key,side:ae.dataset.side,store:ae.dataset.store};
   if(!document.getElementById('announceInput'))renderAnnounce();
   renderLiveBar();
+  renderPendingBar();
   switch(currentTab){
     case 'standings': renderStandings(); break;
     case 'cal': renderCalendar(); break;
@@ -807,7 +857,7 @@ function isTyping(){const a=document.activeElement;return !!a&&(a.tagName==='INP
   if(!localStorage.getItem(WELCOME_KEY))showWelcome();
   try{await loadMatches()}catch{document.getElementById('standingsContainer').innerHTML='<div class="empty-state"><div class="big">⚠️</div>Impossible de charger les matchs.</div>'}
   // restauration / validation de la session
-  if(player&&player.token){try{const me=await sb('rpc/whoami',{method:'POST',body:JSON.stringify({p_token:player.token})});if(!me){player=null;localStorage.removeItem(PLAYER_KEY)}else{player.id=me.id;player.name=me.name}}catch{}}
+  if(player&&player.token){try{const me=await sb('rpc/whoami',{method:'POST',body:JSON.stringify({p_token:player.token})});if(!me){player=null;localStorage.removeItem(PLAYER_KEY)}else{player.id=me.id;player.name=me.name;player.approved=me.approved!==false;localStorage.setItem(PLAYER_KEY,JSON.stringify(player))}}catch{}}
   else if(player&&!player.token){player=null;localStorage.removeItem(PLAYER_KEY)}
   await syncNow();
   renderAll();
